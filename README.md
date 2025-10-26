@@ -79,10 +79,6 @@ Frontend setup
 2. npm install
 3. npm run dev
 
-Notes
-- If requirements.txt is missing or incomplete, inspect backend files for dependencies such as: langchain, langchain_community, langchain_ollama, fastapi, uvicorn, torch, transformers, chromadb, PyPDF2, pandas, pydantic, dotenv, and others.
-- The frontend uses React / Vite (src/main.tsx referenced in index.html).
-
 ---
 
 ## Usage guide
