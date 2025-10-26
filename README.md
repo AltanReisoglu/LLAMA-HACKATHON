@@ -1,4 +1,4 @@
-```markdown
+
 # CAREERİNGO
 
 A hackathon project focused on building career paths with tooling around LLaMA-style language models, GitHub / CV analysis agents, and a React frontend (Student Assistant Interface).
@@ -182,4 +182,4 @@ Examples and quick commands
 - Frontend build errors: ensure Node and npm versions match expectations (check package.json).
 
 
-```
+
