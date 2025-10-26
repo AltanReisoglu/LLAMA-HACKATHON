@@ -166,10 +166,10 @@ Examples and quick commands
 
 ## Team members
 
-- Altan Reisoglu — Backend
+- Altan Reisoglu — Backend, RAG, Frontend implementation
 - Taha Emre Pamukçu — API connections, Tool programming
-- Ardıl Deniz Sustam — Frontend
-- Furkan Ahi — Tool programming
+- Ardıl Deniz Sustam — Frontend, Data collection
+- Furkan Ahi — Tool programming, Agent deployment, Frontend
 
 ---
 
