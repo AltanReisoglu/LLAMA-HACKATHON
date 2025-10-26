@@ -29,7 +29,7 @@ export default function CareerTodoList() {
     const fetchTasks = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(API_URL, { params: { _limit: 5 } });
+        const response = await axios.get("/userstats", { params: { _limit: 5 } });
         const formatted = response.data.map((t: any) => ({
           id: t.id,
           text: t.title || `Görev ${t.id}`,
