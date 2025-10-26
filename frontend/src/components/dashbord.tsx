@@ -7,10 +7,17 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Progress } from './ui/progress';
 import { Separator } from './ui/separator';
-import { Plus, Trash2, Check, Target, Briefcase } from 'lucide-react';
+import { Plus, Trash2, Check, Target, Briefcase, BookOpen, Link, User } from 'lucide-react';
 
-// Mock API (örnek olarak JSONPlaceholder)
-const API_URL = 'https://jsonplaceholder.typicode.com/todos';
+interface DashboardResponse {
+  name: string;
+  course_1: string;
+  course_2: string;
+  link_1?: string;
+  link_2?: string;
+  q1?: string;
+  q2?: string;
+}
 
 interface Task {
   id: number;
@@ -20,36 +27,71 @@ interface Task {
 }
 
 export default function CareerTodoList() {
+  const [userData, setUserData] = useState<DashboardResponse | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Hazırlık');
   const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
 
   const categories = ['Hazırlık', 'Araştırma', 'Başvuru', 'Görüşme', 'Gelişim'];
 
-  // useEffect içinde axios ile verileri çek
+  // Kullanıcı verilerini çek
   useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
+    const fetchUserData = async () => {
+      setUserLoading(true);
       try {
-        // Gerçek backend'e geçildiğinde API_URL değiştirilebilir.
-        const response = await axios.get(API_URL, { params: { _limit: 5 } });
-        // API yapısına göre veriyi dönüştür
-        const formatted = response.data.map((t: any) => ({
-          id: t.id,
-          text: t.title || `Görev ${t.id}`,
-          completed: t.completed || false,
-          category: categories[Math.floor(Math.random() * categories.length)],
-        }));
-        setTasks(formatted);
+        const response = await axios.get('/userstats');
+        setUserData(response.data);
+        
+        // Kullanıcı verilerine göre başlangıç görevleri oluştur
+        const initialTasks: Task[] = [];
+        
+        if (response.data.course_1) {
+          initialTasks.push({
+            id: 1,
+            text: `${response.data.course_1} kursunu tamamla`,
+            completed: false,
+            category: 'Gelişim'
+          });
+        }
+        
+        if (response.data.course_2) {
+          initialTasks.push({
+            id: 2,
+            text: `${response.data.course_2} kursunu tamamla`,
+            completed: false,
+            category: 'Gelişim'
+          });
+        }
+        
+        if (response.data.q1) {
+          initialTasks.push({
+            id: 3,
+            text: `Hedef: ${response.data.q1}`,
+            completed: false,
+            category: 'Hazırlık'
+          });
+        }
+        
+        if (response.data.q2) {
+          initialTasks.push({
+            id: 4,
+            text: `Hedef: ${response.data.q2}`,
+            completed: false,
+            category: 'Hazırlık'
+          });
+        }
+        
+        setTasks(initialTasks);
       } catch (error) {
-        console.error('Görevler alınamadı:', error);
+        console.error('Kullanıcı verileri alınamadı:', error);
       } finally {
-        setLoading(false);
+        setUserLoading(false);
       }
     };
 
-    fetchTasks();
+    fetchUserData();
   }, []);
 
   // Yeni görev ekle
@@ -63,45 +105,95 @@ export default function CareerTodoList() {
       category: selectedCategory,
     };
 
-    try {
-      await axios.post(API_URL, newItem);
-      setTasks(prev => [...prev, newItem]);
-      setNewTask('');
-    } catch (error) {
-      console.error('Görev eklenemedi:', error);
-    }
+    setTasks(prev => [...prev, newItem]);
+    setNewTask('');
   };
 
   // Görev durumunu değiştir
-  const toggleTask = async (id: number) => {
-    const updated = tasks.map(task =>
+  const toggleTask = (id: number) => {
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, completed: !task.completed } : task
-    );
-    setTasks(updated);
-
-    try {
-      const toggled = updated.find(t => t.id === id);
-      await axios.patch(`${API_URL}/${id}`, { completed: toggled?.completed });
-    } catch (error) {
-      console.error('Görev güncellenemedi:', error);
-    }
+    ));
   };
 
   // Görev sil
-  const deleteTask = async (id: number) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`);
-      setTasks(prev => prev.filter(task => task.id !== id));
-    } catch (error) {
-      console.error('Görev silinemedi:', error);
-    }
+  const deleteTask = (id: number) => {
+    setTasks(prev => prev.filter(task => task.id !== id));
   };
 
   const completedCount = tasks.filter(t => t.completed).length;
   const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
+  if (userLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-gray-500">Kullanıcı verileri yükleniyor...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Kullanıcı Bilgileri */}
+      {userData && (
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5 text-blue-600" />
+              Hoş Geldin, {userData.name}
+            </CardTitle>
+            <CardDescription>Kariyer yolculuğun için öneriler</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Kurs 1 */}
+              <div className="p-4 bg-white rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen className="h-4 w-4 text-blue-600" />
+                  <h3 className="font-semibold text-gray-800">{userData.course_1}</h3>
+                </div>
+                {userData.link_1 && (
+                  <a 
+                    href={userData.link_1} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                  >
+                    <Link className="h-3 w-3" />
+                    Kurs Linki
+                  </a>
+                )}
+                {userData.q1 && (
+                  <p className="text-sm text-gray-600 mt-2">{userData.q1}</p>
+                )}
+              </div>
+
+              {/* Kurs 2 */}
+              <div className="p-4 bg-white rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen className="h-4 w-4 text-blue-600" />
+                  <h3 className="font-semibold text-gray-800">{userData.course_2}</h3>
+                </div>
+                {userData.link_2 && (
+                  <a 
+                    href={userData.link_2} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                  >
+                    <Link className="h-3 w-3" />
+                    Kurs Linki
+                  </a>
+                )}
+                {userData.q2 && (
+                  <p className="text-sm text-gray-600 mt-2">{userData.q2}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Başlık */}
       <div>
         <h1 className="text-gray-900 mb-1 flex items-center gap-2">
